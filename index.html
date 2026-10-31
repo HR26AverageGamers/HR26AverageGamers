@@ -161,10 +161,14 @@ function pAdmin(){
     tok=j.access_token;sessionStorage.tok=tok;pAdmin()}}
 
 async function dash(){
-  const [M,G,RU,RS]=await Promise.all([sel('matches','&order=starts_at.desc'),sel('regs','&order=created_at.desc'),sel('rules','&order=pos,id'),sel('results','&order=played.desc')]);
+  const [M,G,RU,RS,VS]=await Promise.all([sel('matches','&order=starts_at.desc'),sel('regs','&order=created_at.desc'),sel('rules','&order=pos,id'),sel('results','&order=played.desc'),rpc('visit_stats',{}).catch(()=>null)]);
   const mt={};M.forEach(m=>mt[m.id]=m);
+  const tl=(a,b)=>'<div><span>'+a+'</span><b>'+b+'</b></div>';
+  let vs='<div class="c mu">Visitor stats need the visit counter SQL to be run in Supabase.</div>';
+  if(VS){const mx=Math.max(1,...VS.days.map(x=>x.n));
+    vs='<div class="t">'+tl('Visits today',VS.today)+tl('Visitors today',VS.uniq_today)+tl('Total visits',VS.total)+tl('Total visitors',VS.uniq)+'</div><div class="c"><b>Last 7 days</b>'+(VS.days.map(x=>'<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span class="mu" style="width:60px">'+day(x.d+'T00:00:00+05:30')+'</span><div class="bar" style="flex:1;margin:0"><i style="width:'+x.n/mx*100+'%"></i></div><b>'+x.n+'</b><span class="mu">('+x.u+' people)</span></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div><div class="c"><b>Most opened pages</b>'+(VS.pages.map(q=>'<div style="display:flex;justify-content:space-between;margin:4px 0"><span>'+esc(q.page.indexOf('match-')==0&&mt[q.page.slice(6)]?mt[q.page.slice(6)].title:q.page)+'</span><b>'+q.n+'</b></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div>'}
   const op=a=>a.map(x=>'<option>'+x+'</option>').join('');
-  V.innerHTML='<h1>Admin</h1><p><button class="o bt" data-a="out">Log out</button></p>'+
+  V.innerHTML='<h1>Admin</h1><p><button class="o bt" data-a="out">Log out</button></p><h2>Visitors</h2>'+vs+
   '<h2>Registrations</h2>'+(G.length?G.map(g=>'<div class="c"><b>'+esc(g.team)+'</b><span class="bd '+(g.status=='confirmed'?'':'x')+'">'+g.status+'</span><div class="mu">'+esc((mt[g.match_id]||{}).title)+' · '+esc(g.phone)+(g.yt?' · YouTube: '+esc(g.yt):'')+(g.subbed?' · Subscribed: '+g.subbed:'')+'</div><div>'+g.players.map(p=>esc(p.n)+' ('+esc(p.id)+')').join(', ')+'</div><div class="ac"><button data-a="ok" data-i="'+g.id+'">Confirm</button>'+(g.yt?'<button class="o" data-a="sy" data-i="'+g.id+'">Subscribed ✔</button><button class="o" data-a="sn" data-i="'+g.id+'">Not subscribed ✘</button>':'')+'<button class="o" data-a="rm" data-i="'+g.id+'">Remove</button></div></div>').join(''):'<div class="c mu">No registrations yet.</div>')+
   '<h2>Schedule a match</h2><form id="mf" class="c"><label>Match title</label><input name="ti" required><div class="g"><div><label>Date and time (IST)</label><input name="dt" type="datetime-local" required></div><div><label>Mode</label><select name="mo">'+op(['Squad','Duo','Solo'])+'</select></div><div><label>Map</label><select name="mp">'+op(['Erangel','Miramar','Sanhok','Vikendi','Livik','Nusa','TDM'])+'</select></div><div><label>Entry fee (0 = free)</label><input name="fe" type="number" min="0" value="0"></div><div><label>1st prize</label><input name="p1" type="number" min="0" value="0"></div><div><label>2nd prize</label><input name="p2" type="number" min="0" value="0"></div><div><label>3rd prize</label><input name="p3" type="number" min="0" value="0"></div><div><label>MVP prize</label><input name="mv" type="number" min="0" value="0"></div><div><label>Total slots</label><input name="sl" type="number" min="1" value="25"></div><div><label>Room ID (optional)</label><input name="ri"></div><div><label>Room password (optional)</label><input name="rp"></div></div><label><input type="checkbox" name="so">Subscribers only (free for subscribers)</label><p></p><button>Schedule match</button></form>'+
   '<h2>Matches</h2>'+M.map(m=>'<div class="c"><b>'+esc(m.title)+'</b><div class="mu">'+day(m.starts_at)+' '+tm(m.starts_at)+' · '+m.mode+' · '+(m.fee?inr(m.fee):'Free')+(m.subs_only?' · Subscribers only':'')+'</div><div class="ac"><button class="o" data-a="room" data-i="'+m.id+'">Set room</button><button class="o" data-a="dm" data-i="'+m.id+'">Delete</button></div></div>').join('')+
@@ -193,12 +197,16 @@ async function dash(){
       dash()}catch(x){alert('Failed: '+x.message)}};
 }
 
+function track(h){if(h=='admin'||tok)return;try{let v=localStorage.vid;if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.vid=v}
+  fetch(C.url+'/rest/v1/visits',{method:'POST',headers:{apikey:C.key,Authorization:'Bearer '+C.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({vid:v,page:h.slice(0,40)}),keepalive:true}).catch(()=>{})}catch(e){}}
+
 /* ===== Router ===== */
 async function route(){
   clearInterval(T);V.onclick=null;
   const h=location.hash.slice(1)||'matches';
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')=='#'+h||(h.indexOf('match-')==0&&a.getAttribute('href')=='#matches')));
   if(C.url.indexOf('YOUR_')>-1){V.innerHTML='<div class="c"><b>Setup needed.</b> Open index.html and paste your Supabase URL and key in the settings at the top of the script.</div>';return}
+  track(h);
   try{if(h=='results')await pResults();else if(h=='rules')await pRules();else if(h=='admin')await pAdmin();else if(h.indexOf('match-')==0)await pMatch(+h.slice(6));else await pMatches()}
   catch(e){V.innerHTML='<div class="c er">Could not load data. Check your connection and refresh the page.</div>'}
   scrollTo(0,0)}
