@@ -50,7 +50,7 @@ footer{border-top:1px solid var(--ln);margin-top:36px;padding:20px 0 calc(28px +
 <footer><div class="w">Join our WhatsApp group for room updates and results. <a id="wa" target="_blank" rel="noopener">Join the WhatsApp group</a></div></footer>
 <script>
 /* ===== SETTINGS: paste your Supabase values here ===== */
-const C={url:'https://ihgglliyxrxwygdwjinn.supabase.co',key:'sb_publishable_E2T16PyOxzzxKmoWnK778A_qpyH7KTP',dom:'banty06012000@gmail.com',wa:'https://chat.whatsapp.com/DUi4bYjZfyuLnXWpP0NfwX?s=hd&p=i&mlu=4&ilr=4&iam=2'};
+const C={url:'https://ihgglliyxrxwygdwjinn.supabase.co',key:'sb_publishable_E2T16PyOxzzxKmoWnK778A_qpyH7KTP',dom:'hr26gamers.com',wa:'https://chat.whatsapp.com/DUi4bYjZfyuLnXWpP0NfwX?s=hd&p=i&mlu=4&ilr=4&iam=2'};
 
 let tok=sessionStorage.tok||null,S={},T;
 const $=s=>document.querySelector(s),V=$('#v');
@@ -130,10 +130,10 @@ async function pResults(){V.innerHTML='<h1>Results</h1><p class="s">Winners of r
 /* ===== Admin ===== */
 function pAdmin(){
   if(tok)return dash();
-  V.innerHTML='<h1>Admin login</h1><form id="lf" class="c" style="max-width:420px"><label>Username</label><input name="u" required autocomplete="username"><label>Password</label><input name="p" type="password" required autocomplete="current-password"><p class="er" id="le"></p><button>Log in</button></form>';
+  V.innerHTML='<h1>Admin login</h1><form id="lf" class="c" style="max-width:420px"><label>Username or email</label><input name="u" required autocomplete="username"><label>Password</label><input name="p" type="password" required autocomplete="current-password"><p class="er" id="le"></p><button>Log in</button></form>';
   $('#lf').onsubmit=async e=>{e.preventDefault();const f=e.target;
-    const r=await fetch(C.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:C.key,'Content-Type':'application/json'},body:JSON.stringify({email:f.u.value.trim().toLowerCase()+'@'+C.dom,password:f.p.value})});
-    const j=await r.json();if(!j.access_token){$('#le').textContent='Wrong username or password.';return}
+    const r=await fetch(C.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:C.key,'Content-Type':'application/json'},body:JSON.stringify({email:(f.u.value.indexOf('@')>-1?f.u.value.trim():f.u.value.trim()+'@'+C.dom).toLowerCase(),password:f.p.value})});
+    const j=await r.json();if(!j.access_token){$('#le').textContent='Login failed: '+(j.error_description||j.msg||j.message||'check your details')+'.';return}
     tok=j.access_token;sessionStorage.tok=tok;pAdmin()}}
 
 async function dash(){
