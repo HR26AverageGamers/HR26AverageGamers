@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>HR26AverageGamers</title>
+<link rel="icon" href="logo.png">
 <style>
 :root{--bg:#FAF9F6;--sf:#fff;--ink:#1a1a1a;--mu:#6b6560;--ln:#e6e3dd;--ac:#d97706;--ok:#15803d;--er:#b91c1c;--wn:#fef3c7;--wt:#78350f}
 @media(prefers-color-scheme:dark){:root{--bg:#141414;--sf:#1e1e1e;--ink:#f1efe9;--mu:#a09a92;--ln:#333;--ac:#f59e0b;--ok:#4ade80;--er:#f87171;--wn:#3b2f0b;--wt:#fde68a}}
@@ -60,10 +61,12 @@ button,.bt{background:linear-gradient(90deg,var(--ac),var(--ac2));box-shadow:0 3
 button.o,.bt.o{background:none;box-shadow:none;color:var(--ink);border:1px solid var(--ln)}
 footer{background:linear-gradient(120deg,#1e1b4b,#5b21b6);color:#e9d5ff;border:0}
 footer a{color:#86efac;font-weight:700}
+.br{display:flex;align-items:center;gap:10px}.lg{width:46px;height:46px;border-radius:50%;object-fit:cover}
+.bn{display:block;width:100%;height:auto;border-radius:14px;margin-top:18px}
 </style></head>
 <body>
 <a class="wab" id="wa2" target="_blank" rel="noopener">💬 Join our WhatsApp group for match updates and room details</a>
-<header><div class="w"><div class="br">HR26<span>AverageGamers</span></div>
+<header><div class="w"><div class="br"><img src="logo.png" alt="" class="lg" onerror="this.remove()">HR26<span>AverageGamers</span></div>
 <nav aria-label="Main"><a href="#matches">Matches</a><a href="#results">Results</a><a href="#rules">Rules</a></nav></div></header>
 <main class="w" id="v"></main>
 <footer><div class="w">Join our WhatsApp group for room updates and results. <a id="wa" target="_blank" rel="noopener">Join the WhatsApp group</a></div></footer>
@@ -99,7 +102,7 @@ async function loadS(){try{(await sel('settings')).forEach(r=>S[r.k]=r.v)}catch(
 
 /* ===== Visitor pages ===== */
 async function pMatches(){
-  V.innerHTML='<h1>Upcoming matches</h1><p class="s">Free and paid BGMI custom rooms. All times are IST.</p><div id="l">Loading...</div>';
+  V.innerHTML='<img src="banner.jpg" alt="HR26AverageGamers tournaments" class="bn" onerror="this.remove()"><h1>Upcoming matches</h1><p class="s">Free and paid BGMI custom rooms. All times are IST.</p><div id="l">Loading...</div>';
   const [M,R]=await Promise.all([sel('matches','&starts_at=gte.'+new Date(Date.now()-36e5).toISOString()+'&order=starts_at'),sel('public_regs')]);
   $('#l').innerHTML=M.length?M.map(m=>{const n=cnt(R,m.id);
     return '<a class="c m" href="#match-'+m.id+'"><div><span class="mu">'+day(m.starts_at)+'</span><br><b>'+tm(m.starts_at)+'</b></div><div><b>'+esc(m.title)+'</b>'+bdg(stat(m,n))+(m.subs_only?'<span class="bd">SUBSCRIBERS ONLY</span>':'')+
