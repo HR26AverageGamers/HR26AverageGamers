@@ -42,9 +42,28 @@ details summary{cursor:pointer}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 footer{border-top:1px solid var(--ln);margin-top:36px;padding:20px 0 calc(28px + env(safe-area-inset-bottom,0px));color:var(--mu)}
 @media(max-width:640px){.m{grid-template-columns:1fr}.g{grid-template-columns:1fr}.tm{columns:1}}
+
+:root{--bg:#F4F1FF;--sf:#fff;--ink:#1b1630;--mu:#6a6485;--ln:#e3dcf7;--ac:#f97316;--ac2:#ec4899;--pu:#7c3aed}
+@media(prefers-color-scheme:dark){:root{--bg:#0f0c1d;--sf:#1a1630;--ink:#f3f0ff;--mu:#a9a3c8;--ln:#322b55;--ac:#fb923c;--ac2:#f472b6;--pu:#a78bfa}}
+.wab{display:block;background:#25D366;color:#053d1c;font-weight:800;text-decoration:none;text-align:center;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px}
+.wab:hover{background:#1ebe5b}
+header{background:linear-gradient(120deg,#1e1b4b,#5b21b6 55%,#be185d);border:0;padding-top:0}
+.br{color:#fff;font-size:22px;letter-spacing:.3px}.br span{color:#fdba74}
+nav a{color:#e9d5ff}nav a.on{background:rgba(255,255,255,.2);color:#fff}
+h1{background:linear-gradient(90deg,var(--pu),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.c{box-shadow:0 2px 12px rgba(124,58,237,.1)}
+a.c.m{border-left:5px solid var(--ac);transition:transform .15s}
+a.c.m:hover{transform:translateY(-2px);border-color:var(--pu)}
+.t div{border-top:3px solid var(--pu)}.t div:nth-child(2n){border-top-color:var(--ac)}.t div:nth-child(3n){border-top-color:var(--ac2)}
+.bar i{background:linear-gradient(90deg,var(--pu),var(--ac2))}
+button,.bt{background:linear-gradient(90deg,var(--ac),var(--ac2));box-shadow:0 3px 10px rgba(236,72,153,.3)}
+button.o,.bt.o{background:none;box-shadow:none;color:var(--ink);border:1px solid var(--ln)}
+footer{background:linear-gradient(120deg,#1e1b4b,#5b21b6);color:#e9d5ff;border:0}
+footer a{color:#86efac;font-weight:700}
 </style></head>
 <body>
-<header><div class="w"><div class="br">HR26AverageGamers</div>
+<a class="wab" id="wa2" target="_blank" rel="noopener">💬 Join our WhatsApp group for match updates and room details</a>
+<header><div class="w"><div class="br">HR26<span>AverageGamers</span></div>
 <nav aria-label="Main"><a href="#matches">Matches</a><a href="#results">Results</a><a href="#rules">Rules</a></nav></div></header>
 <main class="w" id="v"></main>
 <footer><div class="w">Join our WhatsApp group for room updates and results. <a id="wa" target="_blank" rel="noopener">Join the WhatsApp group</a></div></footer>
@@ -76,7 +95,7 @@ const cnt=(R,id)=>R.filter(r=>r.match_id===id).length;
 const left=d=>{const t=new Date(d)-Date.now();if(t<=0)return'started';const h=Math.floor(t/36e5),m=Math.floor(t%36e5/6e4);return'starts in '+(h?h+'h ':'')+m+'m'};
 const bdg=(s)=>'<span class="bd '+(s=='OPEN'?'':'x')+'">'+s+'</span>';
 
-async function loadS(){try{(await sel('settings')).forEach(r=>S[r.k]=r.v)}catch(e){}$('#wa').href=S.wa||C.wa}
+async function loadS(){try{(await sel('settings')).forEach(r=>S[r.k]=r.v)}catch(e){}$('#wa').href=$('#wa2').href=S.wa||C.wa}
 
 /* ===== Visitor pages ===== */
 async function pMatches(){
