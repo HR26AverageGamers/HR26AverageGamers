@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HR26AverageGamers</title>
+<style>
+:root{--bg:#FAF9F6;--sf:#fff;--ink:#1a1a1a;--mu:#6b6560;--ln:#e6e3dd;--ac:#d97706;--ok:#15803d;--er:#b91c1c;--wn:#fef3c7;--wt:#78350f}
+@media(prefers-color-scheme:dark){:root{--bg:#141414;--sf:#1e1e1e;--ink:#f1efe9;--mu:#a09a92;--ln:#333;--ac:#f59e0b;--ok:#4ade80;--er:#f87171;--wn:#3b2f0b;--wt:#fde68a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:1040px;margin:0 auto;padding:0 16px}
+header{background:var(--sf);border-bottom:1px solid var(--ln);padding-top:env(safe-area-inset-top,0px)}
+header .w{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;flex-wrap:wrap;gap:6px}
+.br{font-size:20px;font-weight:700}
+nav a{color:var(--mu);text-decoration:none;padding:8px 14px;border-radius:8px}
+nav a.on{background:var(--bg);color:var(--ink)}
+h1{font-size:30px;margin:26px 0 6px;line-height:1.2}
+h2{font-size:20px;margin:22px 0 8px}
+.s{color:var(--mu);margin:0 0 18px}
+.c{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:18px;margin:0 0 14px}
+a.c{color:inherit;text-decoration:none}
+.m{display:grid;grid-template-columns:110px 1fr;gap:6px 18px}
+.mu{color:var(--mu)}.er{color:var(--er)}.ok{color:var(--ok)}
+.bd{font-size:12px;font-weight:700;border:1px solid var(--ok);color:var(--ok);padding:1px 8px;border-radius:6px;margin-left:8px;vertical-align:middle;white-space:nowrap}
+.bd.x{border-color:var(--er);color:var(--er)}
+.bar{height:6px;background:var(--ln);border-radius:4px;margin:10px 0 4px}
+.bar i{display:block;height:100%;background:var(--ac);border-radius:4px}
+.t{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
+.t div{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:10px 14px}
+.t span{display:block;color:var(--mu);font-size:14px}.t b{font-size:19px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input[type=checkbox]{width:auto;margin-right:8px}
+fieldset{border:1px solid var(--ln);border-radius:12px;margin:14px 0;padding:0 14px 14px}
+legend{color:var(--mu);padding:0 6px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+button,.bt{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer;text-decoration:none;display:inline-block}
+.o{background:none;color:var(--ink);border:1px solid var(--ln)}
+.wn{background:var(--wn);color:var(--wt);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:15px}
+.tm{columns:2}.tm div{break-inside:avoid;padding:3px 0}
+.ac{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+details summary{cursor:pointer}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+footer{border-top:1px solid var(--ln);margin-top:36px;padding:20px 0 calc(28px + env(safe-area-inset-bottom,0px));color:var(--mu)}
+@media(max-width:640px){.m{grid-template-columns:1fr}.g{grid-template-columns:1fr}.tm{columns:1}}
+</style></head>
+<body>
+<header><div class="w"><div class="br">HR26AverageGamers</div>
+<nav aria-label="Main"><a href="#matches">Matches</a><a href="#results">Results</a><a href="#rules">Rules</a></nav></div></header>
+<main class="w" id="v"></main>
+<footer><div class="w">Join our WhatsApp group for room updates and results. <a id="wa" target="_blank" rel="noopener">Join the WhatsApp group</a></div></footer>
+<script>
+/* ===== SETTINGS: paste your Supabase values here ===== */
+const C={url:'https://ihgglliyxrxwygdwjinn.supabase.co',key:'sb_publishable_E2T16PyOxzzxKmoWnK778A_qpyH7KTP',dom:'banty06012000@gmail.com',wa:'https://chat.whatsapp.com/DUi4bYjZfyuLnXWpP0NfwX?s=hd&p=i&mlu=4&ilr=4&iam=2'};
+
+let tok=sessionStorage.tok||null,S={},T;
+const $=s=>document.querySelector(s),V=$('#v');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const inr=n=>'₹'+n;
+const ist=(d,o)=>new Date(d).toLocaleString('en-IN',Object.assign({timeZone:'Asia/Kolkata'},o));
+const tm=d=>ist(d,{hour:'numeric',minute:'2-digit',hour12:true});
+const day=d=>ist(d,{day:'numeric',month:'short'});
+
+async function api(p,o){o=o||{};
+  const r=await fetch(C.url+'/rest/v1/'+p,Object.assign({},o,{headers:Object.assign({apikey:C.key,Authorization:'Bearer '+(tok||C.key),'Content-Type':'application/json'},o.headers||{})}));
+  if(r.status==401&&tok){sessionStorage.removeItem('tok');tok=null;location.reload()}
+  const t=await r.text();if(!r.ok)throw new Error(t||r.status);return t?JSON.parse(t):null}
+const sel=(t,q)=>api(t+'?select=*'+(q||''));
+const ins=(t,b,rep)=>api(t,{method:'POST',body:JSON.stringify(b),headers:{Prefer:rep?'return=representation':'return=minimal'}});
+const ups=(t,k,b)=>api(t+'?on_conflict='+k,{method:'POST',body:JSON.stringify(b),headers:{Prefer:'resolution=merge-duplicates,return=minimal'}});
+const upd=(t,i,b)=>api(t+'?id=eq.'+i,{method:'PATCH',body:JSON.stringify(b),headers:{Prefer:'return=minimal'}});
+const del=(t,i)=>api(t+'?id=eq.'+i,{method:'DELETE'});
+const rpc=(f,b)=>api('rpc/'+f,{method:'POST',body:JSON.stringify(b)});
+
+const stat=(m,n)=>Date.now()>new Date(m.starts_at)-18e5?'CLOSED':n>=m.slots?'FULL':'OPEN';
+const cnt=(R,id)=>R.filter(r=>r.match_id===id).length;
+const left=d=>{const t=new Date(d)-Date.now();if(t<=0)return'started';const h=Math.floor(t/36e5),m=Math.floor(t%36e5/6e4);return'starts in '+(h?h+'h ':'')+m+'m'};
+const bdg=(s)=>'<span class="bd '+(s=='OPEN'?'':'x')+'">'+s+'</span>';
+
+async function loadS(){try{(await sel('settings')).forEach(r=>S[r.k]=r.v)}catch(e){}$('#wa').href=S.wa||C.wa}
+
+/* ===== Visitor pages ===== */
+async function pMatches(){
+  V.innerHTML='<h1>Upcoming matches</h1><p class="s">Free and paid BGMI custom rooms. All times are IST.</p><div id="l">Loading...</div>';
+  const [M,R]=await Promise.all([sel('matches','&starts_at=gte.'+new Date(Date.now()-36e5).toISOString()+'&order=starts_at'),sel('public_regs')]);
+  $('#l').innerHTML=M.length?M.map(m=>{const n=cnt(R,m.id);
+    return '<a class="c m" href="#match-'+m.id+'"><div><span class="mu">'+day(m.starts_at)+'</span><br><b>'+tm(m.starts_at)+'</b></div><div><b>'+esc(m.title)+'</b>'+bdg(stat(m,n))+(m.subs_only?'<span class="bd">SUBSCRIBERS ONLY</span>':'')+
+    '<div class="mu">'+m.mode+' · '+m.map+' · '+(m.fee?inr(m.fee)+' entry':'Free entry')+' · Prizes '+inr(m.p1+m.p2+m.p3+m.mvp)+'</div><div class="bar"><i style="width:'+Math.min(100,n/m.slots*100)+'%"></i></div><span class="mu">'+n+'/'+m.slots+' teams</span></div></a>'}).join(''):'<div class="c mu">No matches scheduled yet. Check back soon.</div>';
+}
+
+async function pMatch(id){
+  const [M,R,RU]=await Promise.all([sel('matches','&id=eq.'+id),sel('public_regs','&match_id=eq.'+id),sel('rules','&order=pos,id')]);
+  const m=M[0];if(!m){V.innerHTML='<h1>Match not found</h1><a href="#matches">← All matches</a>';return}
+  const n=R.length,s=stat(m,n),pc=m.mode=='Solo'?1:m.mode=='Duo'?2:4,teams=R.filter(r=>r.team);
+  const tile=(a,b)=>'<div><span>'+a+'</span><b>'+b+'</b></div>';
+  let form='';
+  if(s=='OPEN'){
+    form='<div class="c"><h2>Register</h2><p class="mu" style="margin-top:0">'+(m.fee?'Entry fee '+inr(m.fee)+', paid by UPI. After you register, your slot is held for 15 minutes while you pay.':'Free entry. After you register, your slot is held for 15 minutes.')+'</p><form id="f"><label>Team name</label><input name="tn" required maxlength="40"><label>WhatsApp number</label><input name="ph" required inputmode="numeric" placeholder="10-digit number" maxlength="10"><p class="mu">Your number is only visible to organizers. Room details will show on this phone.</p>';
+    if(m.subs_only)form+='<div class="wn"><b>Subscribers only match.</b> Subscribe to our YouTube channel and enter your YouTube username below. Keep your YouTube subscriptions <b>public</b> until your slot is confirmed. If they are private, we cannot verify your subscription and your slot will not be confirmed. You can make them private again after confirmation.</div><p><a class="bt o" target="_blank" rel="noopener" href="'+esc(S.yt||'#')+'">Subscribe on YouTube</a></p><label>Your YouTube username</label><input name="yt" required maxlength="60">';
+    for(let i=0;i<pc;i++)form+='<fieldset><legend>Player '+(i+1)+(i?'':' (captain)')+'</legend><div class="g"><div><label>In-game name</label><input name="pn'+i+'" required maxlength="30"></div><div><label>BGMI character ID</label><input name="pi'+i+'" required inputmode="numeric" maxlength="14"></div></div></fieldset>';
+    form+='<p class="er" id="fe"></p><button>Register &amp; hold slot</button></form></div>';
+  }
+  V.innerHTML='<p><a href="#matches">← All matches</a></p><h1>'+esc(m.title)+bdg(s)+'</h1><p class="s">'+day(m.starts_at)+', '+tm(m.starts_at)+' IST · <span id="cd"></span><br>Registration closes at '+tm(new Date(m.starts_at)-18e5)+' IST.</p>'+
+  '<div class="t">'+tile('Mode',m.mode)+tile('Map',m.map)+tile('Entry',m.fee?inr(m.fee):'Free')+tile('1st prize',inr(m.p1))+tile('2nd prize',inr(m.p2))+tile('3rd prize',inr(m.p3))+tile('MVP prize',inr(m.mvp))+tile('Slots',n+'/'+m.slots)+'</div>'+
+  '<div class="c"><h2 style="margin-top:0">Room details</h2><div id="rm" class="mu">Only shown to confirmed teams, on the phone they registered with, from '+tm(new Date(m.starts_at)-9e5)+' IST.</div></div>'+form+
+  '<details class="c"><summary><b>Already registered? Find my registration</b></summary><form id="ff"><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10"><p></p><button>Find my registration</button></form><div id="fr"></div></details>'+
+  '<p><a class="bt o" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m.title+' - register here: '+location.href)+'">Share on WhatsApp</a></p>'+
+  '<h2>Rules</h2><div class="mu">'+RU.map(r=>'<div>'+esc(r.txt)+'</div>').join('')+'</div>'+
+  '<h2>Registered teams ('+teams.length+')</h2><div class="tm mu">'+(teams.length?teams.map(r=>'<div><span>#'+r.id+'</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--ink)">'+esc(r.team)+'</span></div>').join(''):'No confirmed teams yet.')+'</div>';
+  const cd=()=>{const e=$('#cd');if(e)e.textContent=left(m.starts_at)};cd();T=setInterval(cd,3e4);
+  roomBox(m);
+  if($('#f'))$('#f').onsubmit=async e=>{e.preventDefault();const f=e.target,ph=f.ph.value.trim(),fe=$('#fe');
+    if(!/^\d{10}$/.test(ph)){fe.textContent='Enter a valid 10-digit WhatsApp number.';return}
+    const pl=[];for(let i=0;i<pc;i++)pl.push({n:f['pn'+i].value.trim(),id:f['pi'+i].value.trim()});
+    try{await ins('regs',{match_id:m.id,team:f.tn.value.trim(),phone:ph,players:pl,yt:m.subs_only?f.yt.value.trim():null});localStorage.ph=ph;
+      f.parentNode.innerHTML='<h2>Registered</h2><p class="ok"><b>Your slot is held for 15 minutes.</b></p>'+(m.fee?'<p>Pay '+inr(m.fee)+(S.upi?' to UPI ID <b>'+esc(S.upi)+'</b>':'')+' and post the payment screenshot in our WhatsApp group.</p>':'')+(m.subs_only?'<div class="wn">Keep your YouTube subscriptions <b>public</b> until your slot is confirmed.</div>':'')+'<p class="mu">Your slot is confirmed by an organizer. Check your status anytime with "Find my registration" below.</p>';roomBox(m)}
+    catch(x){fe.textContent='Could not register. Check your details and try again.'}};
+  $('#ff').onsubmit=async e=>{e.preventDefault();const q=e.target.q.value.trim();localStorage.ph=q;
+    try{const r=await rpc('find_reg',{p:q});$('#fr').innerHTML=r.length?r.map(x=>'<div class="c" style="margin-top:12px"><b>'+esc(x.title)+'</b><br>Team '+esc(x.team)+': <b class="'+(x.status=='confirmed'?'ok':'')+'">'+esc(x.status)+'</b>'+(x.subbed=='no'?'<br><span class="er">We could not find your subscription. Subscribe and keep subscriptions public, then message the group.</span>':'')+(x.room_id?'<br>Room ID <b>'+esc(x.room_id)+'</b> · Password <b>'+esc(x.room_pass)+'</b>':'')+'</div>').join(''):'<p class="mu">No registration found for this number.</p>';roomBox(m)}
+    catch(x){$('#fr').textContent='Could not search. Try again.'}};
+}
+async function roomBox(m){const p=localStorage.ph;if(!p||!$('#rm'))return;
+  try{const r=(await rpc('find_reg',{p})).find(x=>x.match_id==m.id);if(!r)return;
+    $('#rm').innerHTML=r.room_id?'Room ID <b>'+esc(r.room_id)+'</b> · Password <b>'+esc(r.room_pass)+'</b>':r.status=='confirmed'?'You are confirmed. Room details appear here 15 minutes before start.':'Your registration is '+esc(r.status)+'. Room details appear after you are confirmed.'}catch(e){}}
+
+async function pRules(){V.innerHTML='<h1>Rules</h1><p class="s">Read these before you register.</p><div id="l"></div>';
+  const RU=await sel('rules','&order=pos,id');$('#l').innerHTML=RU.map(r=>'<div class="c">'+esc(r.txt)+'</div>').join('')||'<div class="c mu">No rules added yet.</div>'}
+async function pResults(){V.innerHTML='<h1>Results</h1><p class="s">Winners of recent matches.</p><div id="l"></div>';
+  const R=await sel('results','&order=played.desc');$('#l').innerHTML=R.map(r=>'<div class="c"><b>'+esc(r.title)+'</b><div class="mu">'+esc(r.played||'')+'</div><div style="white-space:pre-line;margin-top:6px">'+esc(r.winners)+'</div></div>').join('')||'<div class="c mu">No results yet.</div>'}
+
+/* ===== Admin ===== */
+function pAdmin(){
+  if(tok)return dash();
+  V.innerHTML='<h1>Admin login</h1><form id="lf" class="c" style="max-width:420px"><label>Username</label><input name="u" required autocomplete="username"><label>Password</label><input name="p" type="password" required autocomplete="current-password"><p class="er" id="le"></p><button>Log in</button></form>';
+  $('#lf').onsubmit=async e=>{e.preventDefault();const f=e.target;
+    const r=await fetch(C.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:C.key,'Content-Type':'application/json'},body:JSON.stringify({email:f.u.value.trim().toLowerCase()+'@'+C.dom,password:f.p.value})});
+    const j=await r.json();if(!j.access_token){$('#le').textContent='Wrong username or password.';return}
+    tok=j.access_token;sessionStorage.tok=tok;pAdmin()}}
+
+async function dash(){
+  const [M,G,RU,RS]=await Promise.all([sel('matches','&order=starts_at.desc'),sel('regs','&order=created_at.desc'),sel('rules','&order=pos,id'),sel('results','&order=played.desc')]);
+  const mt={};M.forEach(m=>mt[m.id]=m);
+  const op=a=>a.map(x=>'<option>'+x+'</option>').join('');
+  V.innerHTML='<h1>Admin</h1><p><button class="o bt" data-a="out">Log out</button></p>'+
+  '<h2>Registrations</h2>'+(G.length?G.map(g=>'<div class="c"><b>'+esc(g.team)+'</b><span class="bd '+(g.status=='confirmed'?'':'x')+'">'+g.status+'</span><div class="mu">'+esc((mt[g.match_id]||{}).title)+' · '+esc(g.phone)+(g.yt?' · YouTube: '+esc(g.yt):'')+(g.subbed?' · Subscribed: '+g.subbed:'')+'</div><div>'+g.players.map(p=>esc(p.n)+' ('+esc(p.id)+')').join(', ')+'</div><div class="ac"><button data-a="ok" data-i="'+g.id+'">Confirm</button>'+(g.yt?'<button class="o" data-a="sy" data-i="'+g.id+'">Subscribed ✔</button><button class="o" data-a="sn" data-i="'+g.id+'">Not subscribed ✘</button>':'')+'<button class="o" data-a="rm" data-i="'+g.id+'">Remove</button></div></div>').join(''):'<div class="c mu">No registrations yet.</div>')+
+  '<h2>Schedule a match</h2><form id="mf" class="c"><label>Match title</label><input name="ti" required><div class="g"><div><label>Date and time (IST)</label><input name="dt" type="datetime-local" required></div><div><label>Mode</label><select name="mo">'+op(['Squad','Duo','Solo'])+'</select></div><div><label>Map</label><select name="mp">'+op(['Erangel','Miramar','Sanhok','Vikendi','Livik','Nusa','TDM'])+'</select></div><div><label>Entry fee (0 = free)</label><input name="fe" type="number" min="0" value="0"></div><div><label>1st prize</label><input name="p1" type="number" min="0" value="0"></div><div><label>2nd prize</label><input name="p2" type="number" min="0" value="0"></div><div><label>3rd prize</label><input name="p3" type="number" min="0" value="0"></div><div><label>MVP prize</label><input name="mv" type="number" min="0" value="0"></div><div><label>Total slots</label><input name="sl" type="number" min="1" value="25"></div><div><label>Room ID (optional)</label><input name="ri"></div><div><label>Room password (optional)</label><input name="rp"></div></div><label><input type="checkbox" name="so">Subscribers only (free for subscribers)</label><p></p><button>Schedule match</button></form>'+
+  '<h2>Matches</h2>'+M.map(m=>'<div class="c"><b>'+esc(m.title)+'</b><div class="mu">'+day(m.starts_at)+' '+tm(m.starts_at)+' · '+m.mode+' · '+(m.fee?inr(m.fee):'Free')+(m.subs_only?' · Subscribers only':'')+'</div><div class="ac"><button class="o" data-a="room" data-i="'+m.id+'">Set room</button><button class="o" data-a="dm" data-i="'+m.id+'">Delete</button></div></div>').join('')+
+  '<h2>Rules</h2>'+RU.map(r=>'<div class="c">'+esc(r.txt)+'<div class="ac"><button class="o" data-a="re" data-i="'+r.id+'" data-t="'+esc(r.txt)+'">Edit</button><button class="o" data-a="rd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
+  '<form id="rf" class="c"><label>New rule</label><input name="t" required><p></p><button>Add rule</button></form>'+
+  '<h2>Results</h2>'+RS.map(r=>'<div class="c"><b>'+esc(r.title)+'</b> <span class="mu">'+esc(r.played||'')+'</span><div style="white-space:pre-line">'+esc(r.winners)+'</div><div class="ac"><button class="o" data-a="xd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
+  '<form id="xf" class="c"><label>Match title</label><input name="t" required><label>Date</label><input name="d" type="date"><label>Winners (1st, 2nd, 3rd, MVP)</label><textarea name="w" rows="4" required></textarea><p></p><button>Add result</button></form>'+
+  '<h2>Settings</h2><form id="sf" class="c"><label>WhatsApp group link</label><input name="wa" value="'+esc(S.wa||'')+'"><label>YouTube channel link</label><input name="yt" value="'+esc(S.yt||'')+'"><label>UPI ID</label><input name="upi" value="'+esc(S.upi||'')+'"><p></p><button>Save settings</button></form>';
+  const go=fn=>async e=>{e.preventDefault();try{await fn(e.target);await loadS();dash()}catch(x){alert('Failed: '+x.message)}};
+  $('#mf').onsubmit=go(async f=>{const v=n=>f[n].value,r=await ins('matches',{title:v('ti'),starts_at:new Date(v('dt')+':00+05:30').toISOString(),mode:v('mo'),map:v('mp'),fee:+v('fe')||0,p1:+v('p1')||0,p2:+v('p2')||0,p3:+v('p3')||0,mvp:+v('mv')||0,slots:+v('sl')||25,subs_only:f.so.checked},1);
+    if(v('ri'))await ups('rooms','match_id',[{match_id:r[0].id,room_id:v('ri'),room_pass:v('rp')}])});
+  $('#rf').onsubmit=go(f=>ins('rules',{txt:f.t.value.trim(),pos:RU.length+1}));
+  $('#xf').onsubmit=go(f=>ins('results',{title:f.t.value.trim(),played:f.d.value||null,winners:f.w.value.trim()}));
+  $('#sf').onsubmit=go(f=>ups('settings','k',[{k:'wa',v:f.wa.value.trim()},{k:'yt',v:f.yt.value.trim()},{k:'upi',v:f.upi.value.trim()}]));
+  V.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,i=b.dataset.i;
+    try{if(a=='out'){sessionStorage.removeItem('tok');tok=null;return pAdmin()}
+      if(a=='ok')await upd('regs',i,{status:'confirmed'});
+      else if(a=='sy')await upd('regs',i,{subbed:'yes'});
+      else if(a=='sn')await upd('regs',i,{subbed:'no'});
+      else if(a=='rm'){if(!confirm('Remove this registration?'))return;await del('regs',i)}
+      else if(a=='dm'){if(!confirm('Delete this match and its registrations?'))return;await del('matches',i)}
+      else if(a=='rd')await del('rules',i);
+      else if(a=='xd')await del('results',i);
+      else if(a=='re'){const t=prompt('Edit rule',b.dataset.t);if(!t)return;await upd('rules',i,{txt:t})}
+      else if(a=='room'){const id=prompt('Room ID');if(!id)return;const pw=prompt('Room password')||'';await ups('rooms','match_id',[{match_id:+i,room_id:id,room_pass:pw}])}
+      dash()}catch(x){alert('Failed: '+x.message)}};
+}
+
+/* ===== Router ===== */
+async function route(){
+  clearInterval(T);V.onclick=null;
+  const h=location.hash.slice(1)||'matches';
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')=='#'+h||(h.indexOf('match-')==0&&a.getAttribute('href')=='#matches')));
+  if(C.url.indexOf('YOUR_')>-1){V.innerHTML='<div class="c"><b>Setup needed.</b> Open index.html and paste your Supabase URL and key in the settings at the top of the script.</div>';return}
+  try{if(h=='results')await pResults();else if(h=='rules')await pRules();else if(h=='admin')await pAdmin();else if(h.indexOf('match-')==0)await pMatch(+h.slice(6));else await pMatches()}
+  catch(e){V.innerHTML='<div class="c er">Could not load data. Check your connection and refresh the page.</div>'}
+  scrollTo(0,0)}
+addEventListener('hashchange',route);
+loadS().then(route);
+</script></body></html>
