@@ -101,8 +101,8 @@ async function pMatch(id){
   }
   V.innerHTML='<p><a href="#matches">← All matches</a></p><h1>'+esc(m.title)+bdg(s)+'</h1><p class="s">'+day(m.starts_at)+', '+tm(m.starts_at)+' IST · <span id="cd"></span><br>Registration closes at '+tm(new Date(m.starts_at)-18e5)+' IST.</p>'+
   '<div class="t">'+tile('Mode',m.mode)+tile('Map',m.map)+tile('Entry',m.fee?inr(m.fee):'Free')+tile('1st prize',inr(m.p1))+tile('2nd prize',inr(m.p2))+tile('3rd prize',inr(m.p3))+tile('MVP prize',inr(m.mvp))+tile('Slots',n+'/'+m.slots)+'</div>'+
-  '<div class="c"><h2 style="margin-top:0">Room details</h2><div id="rm" class="mu">Only shown to confirmed teams, on the phone they registered with, from '+tm(new Date(m.starts_at)-9e5)+' IST.</div></div>'+form+
-  '<details class="c"><summary><b>Already registered? Find my registration</b></summary><form id="ff"><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10"><p></p><button>Find my registration</button></form><div id="fr"></div></details>'+
+  '<div class="c"><h2 style="margin-top:0">Room details</h2><div id="rm" class="mu">Only shown to confirmed teams. Enter your WhatsApp number and BGMI character ID to see the room ID and password.</div><form id="rq" class="g"><div><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10" value="'+esc(localStorage.ph||'')+'"></div><div><label>BGMI character ID</label><input name="ci" required inputmode="numeric" maxlength="14" value="'+esc(localStorage.cid||'')+'"></div><div><p></p><button>Show room details</button></div></form></div>'+form+
+  '<details class="c"><summary><b>Already registered? Find my registration</b></summary><form id="ff"><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10"><label>BGMI character ID (any player in your team)</label><input name="ci" required inputmode="numeric" maxlength="14"><p></p><button>Find my registration</button></form><div id="fr"></div></details>'+
   '<p><a class="bt o" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m.title+' - register here: '+location.href)+'">Share on WhatsApp</a></p>'+
   '<h2>Rules</h2><div class="mu">'+RU.map(r=>'<div>'+esc(r.txt)+'</div>').join('')+'</div>'+
   '<h2>Registered teams ('+teams.length+')</h2><div class="tm mu">'+(teams.length?teams.map(r=>'<div><span>#'+r.id+'</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--ink)">'+esc(r.team)+'</span></div>').join(''):'No confirmed teams yet.')+'</div>';
@@ -111,16 +111,18 @@ async function pMatch(id){
   if($('#f'))$('#f').onsubmit=async e=>{e.preventDefault();const f=e.target,ph=f.ph.value.trim(),fe=$('#fe');
     if(!/^\d{10}$/.test(ph)){fe.textContent='Enter a valid 10-digit WhatsApp number.';return}
     const pl=[];for(let i=0;i<pc;i++)pl.push({n:f['pn'+i].value.trim(),id:f['pi'+i].value.trim()});
-    try{await ins('regs',{match_id:m.id,team:f.tn.value.trim(),phone:ph,players:pl,yt:m.subs_only?f.yt.value.trim():null});localStorage.ph=ph;
+    try{await ins('regs',{match_id:m.id,team:f.tn.value.trim(),phone:ph,players:pl,yt:m.subs_only?f.yt.value.trim():null});localStorage.ph=ph;localStorage.cid=pl[0].id;
       f.parentNode.innerHTML='<h2>Registered</h2><p class="ok"><b>Your slot is held for 15 minutes.</b></p>'+(m.fee?'<p>Pay '+inr(m.fee)+(S.upi?' to UPI ID <b>'+esc(S.upi)+'</b>':'')+' and post the payment screenshot in our WhatsApp group.</p>':'')+(m.subs_only?'<div class="wn">Keep your YouTube subscriptions <b>public</b> until your slot is confirmed.</div>':'')+'<p class="mu">Your slot is confirmed by an organizer. Check your status anytime with "Find my registration" below.</p>';roomBox(m)}
     catch(x){fe.textContent='Could not register. Check your details and try again.'}};
-  $('#ff').onsubmit=async e=>{e.preventDefault();const q=e.target.q.value.trim();localStorage.ph=q;
-    try{const r=await rpc('find_reg',{p:q});$('#fr').innerHTML=r.length?r.map(x=>'<div class="c" style="margin-top:12px"><b>'+esc(x.title)+'</b><br>Team '+esc(x.team)+': <b class="'+(x.status=='confirmed'?'ok':'')+'">'+esc(x.status)+'</b>'+(x.subbed=='no'?'<br><span class="er">We could not find your subscription. Subscribe and keep subscriptions public, then message the group.</span>':'')+(x.room_id?'<br>Room ID <b>'+esc(x.room_id)+'</b> · Password <b>'+esc(x.room_pass)+'</b>':'')+'</div>').join(''):'<p class="mu">No registration found for this number.</p>';roomBox(m)}
+  $('#rq').onsubmit=e=>{e.preventDefault();localStorage.ph=e.target.q.value.trim();localStorage.cid=e.target.ci.value.trim();roomBox(m,true)};
+  $('#ff').onsubmit=async e=>{e.preventDefault();const q=e.target.q.value.trim(),ci=e.target.ci.value.trim();localStorage.ph=q;localStorage.cid=ci;
+    try{const r=await rpc('find_reg',{p:q,cid:ci});$('#fr').innerHTML=r.length?r.map(x=>'<div class="c" style="margin-top:12px"><b>'+esc(x.title)+'</b><br>Team '+esc(x.team)+': <b class="'+(x.status=='confirmed'?'ok':'')+'">'+esc(x.status)+'</b>'+(x.subbed=='no'?'<br><span class="er">We could not find your subscription. Subscribe and keep subscriptions public, then message the group.</span>':'')+(x.room_id?'<br>Room ID <b>'+esc(x.room_id)+'</b> · Password <b>'+esc(x.room_pass)+'</b>':'')+'</div>').join(''):'<p class="mu">No registration found for this number.</p>';roomBox(m)}
     catch(x){$('#fr').textContent='Could not search. Try again.'}};
 }
-async function roomBox(m){const p=localStorage.ph;if(!p||!$('#rm'))return;
-  try{const r=(await rpc('find_reg',{p})).find(x=>x.match_id==m.id);if(!r)return;
-    $('#rm').innerHTML=r.room_id?'Room ID <b>'+esc(r.room_id)+'</b> · Password <b>'+esc(r.room_pass)+'</b>':r.status=='confirmed'?'You are confirmed. Room details appear here 15 minutes before start.':'Your registration is '+esc(r.status)+'. Room details appear after you are confirmed.'}catch(e){}}
+async function roomBox(m,loud){const p=localStorage.ph,c=localStorage.cid,b=$('#rm');if(!p||!c||!b)return;
+  try{const r=(await rpc('find_reg',{p,cid:c})).find(x=>x.match_id==m.id);
+    if(!r){if(loud)b.innerHTML='<span class="er">No registration found for this number and character ID.</span>';return}
+    b.innerHTML=r.room_id?'Room ID <b>'+esc(r.room_id)+'</b> · Password <b>'+esc(r.room_pass)+'</b>':r.status=='confirmed'?'You are confirmed. Room details will appear here as soon as the organizer shares them.':'Your registration is '+esc(r.status)+'. Room details appear after you are confirmed.'}catch(e){if(loud)b.textContent='Could not check. Try again.'}}
 
 async function pRules(){V.innerHTML='<h1>Rules</h1><p class="s">Read these before you register.</p><div id="l"></div>';
   const RU=await sel('rules','&order=pos,id');$('#l').innerHTML=RU.map(r=>'<div class="c">'+esc(r.txt)+'</div>').join('')||'<div class="c mu">No rules added yet.</div>'}
