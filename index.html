@@ -63,6 +63,8 @@ footer{background:linear-gradient(120deg,#1e1b4b,#5b21b6);color:#e9d5ff;border:0
 footer a{color:#86efac;font-weight:700}
 .br{display:flex;align-items:center;gap:10px}.lg{width:46px;height:46px;border-radius:50%;object-fit:cover}
 .bn{display:block;width:100%;height:auto;border-radius:14px;margin-top:18px}
+.sp{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;background:#25D366;color:#053d1c;font-weight:800;text-decoration:none;padding:12px 18px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.3)}.sp:hover{background:#1ebe5b}
+footer{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 </style></head>
 <body>
 <a class="wab" id="wa2" target="_blank" rel="noopener">💬 Join our WhatsApp group for match updates and room details</a>
@@ -70,14 +72,18 @@ footer a{color:#86efac;font-weight:700}
 <nav aria-label="Main"><a href="#matches">Matches</a><a href="#results">Results</a><a href="#rules">Rules</a></nav></div></header>
 <main class="w" id="v"></main>
 <footer><div class="w">Join our WhatsApp group for room updates and results. <a id="wa" target="_blank" rel="noopener">Join the WhatsApp group</a></div></footer>
+<a class="sp" id="sp" target="_blank" rel="noopener">💬 Support</a>
 <script>
 /* ===== SETTINGS: paste your Supabase values here ===== */
-const C={url:'https://ihgglliyxrxwygdwjinn.supabase.co',key:'sb_publishable_E2T16PyOxzzxKmoWnK778A_qpyH7KTP',dom:'hr26gamers.com',wa:'https://chat.whatsapp.com/DUi4bYjZfyuLnXWpP0NfwX?s=hd&p=i&mlu=4&ilr=4&iam=2'};
+const C={url:'https://ihgglliyxrxwygdwjinn.supabase.co',key:'sb_publishable_E2T16PyOxzzxKmoWnK778A_qpyH7KTP',dom:'hr26gamers.com',wa:'https://chat.whatsapp.com/DUi4bYjZfyuLnXWpP0NfwX?s=hd&p=i&mlu=4&ilr=4&iam=2',sup:'919211974015'};
 
 let tok=sessionStorage.tok||null,S={},T;
 const $=s=>document.querySelector(s),V=$('#v');
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const inr=n=>'₹'+n;
+const pad=n=>n?String(n).padStart(2,'0'):'--';
+let SM='';
+function sup(){$('#sp').href='https://wa.me/'+C.sup+'?text='+encodeURIComponent('Hi HR26AverageGamers, I need help'+(SM?' with: '+SM:'')+'.')}
 const ist=(d,o)=>new Date(d).toLocaleString('en-IN',Object.assign({timeZone:'Asia/Kolkata'},o));
 const tm=d=>ist(d,{hour:'numeric',minute:'2-digit',hour12:true});
 const day=d=>ist(d,{day:'numeric',month:'short'});
@@ -112,7 +118,7 @@ async function pMatches(){
 async function pMatch(id){
   const [M,R,RU]=await Promise.all([sel('matches','&id=eq.'+id),sel('public_regs','&match_id=eq.'+id),sel('rules','&order=pos,id')]);
   const m=M[0];if(!m){V.innerHTML='<h1>Match not found</h1><a href="#matches">← All matches</a>';return}
-  const n=R.length,s=stat(m,n),pc=m.mode=='Solo'?1:m.mode=='Duo'?2:4,teams=R.filter(r=>r.team);
+  SM=m.title;const n=R.length,s=stat(m,n),pc=m.mode=='Solo'?1:m.mode=='Duo'?2:4,teams=R.filter(r=>r.team).sort((a,b)=>(a.slot||99)-(b.slot||99));
   const tile=(a,b)=>'<div><span>'+a+'</span><b>'+b+'</b></div>';
   let form='';
   if(s=='OPEN'){
@@ -127,24 +133,24 @@ async function pMatch(id){
   '<details class="c"><summary><b>Already registered? Find my registration</b></summary><form id="ff"><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10"><label>BGMI character ID (any player in your team)</label><input name="ci" required inputmode="numeric" maxlength="14"><p></p><button>Find my registration</button></form><div id="fr"></div></details>'+
   '<p><a class="bt o" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m.title+' - register here: '+location.href)+'">Share on WhatsApp</a></p>'+
   '<h2>Rules</h2><div class="mu">'+RU.map(r=>'<div>'+esc(r.txt)+'</div>').join('')+'</div>'+
-  '<h2>Registered teams ('+teams.length+')</h2><div class="tm mu">'+(teams.length?teams.map(r=>'<div><span>#'+r.id+'</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--ink)">'+esc(r.team)+'</span></div>').join(''):'No confirmed teams yet.')+'</div>';
+  '<h2>Registered teams ('+teams.length+')</h2><div class="tm mu">'+(teams.length?teams.map(r=>'<div><span>Slot '+pad(r.slot)+'</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--ink)">'+esc(r.team)+'</span></div>').join(''):'No confirmed teams yet.')+'</div>';
   const cd=()=>{const e=$('#cd');if(e)e.textContent=left(m.starts_at)};cd();T=setInterval(cd,3e4);
   roomBox(m);
   if($('#f'))$('#f').onsubmit=async e=>{e.preventDefault();const f=e.target,ph=f.ph.value.trim(),fe=$('#fe');
     if(!/^\d{10}$/.test(ph)){fe.textContent='Enter a valid 10-digit WhatsApp number.';return}
     const pl=[];for(let i=0;i<pc;i++)pl.push({n:f['pn'+i].value.trim(),id:f['pi'+i].value.trim()});
     try{await ins('regs',{match_id:m.id,team:f.tn.value.trim(),phone:ph,players:pl,yt:m.subs_only?f.yt.value.trim():null});localStorage.ph=ph;localStorage.cid=pl[0].id;
-      f.parentNode.innerHTML='<h2>Registered</h2><p class="ok"><b>Your slot is held for 15 minutes.</b></p>'+(m.fee?'<p>Pay '+inr(m.fee)+(S.upi?' to UPI ID <b>'+esc(S.upi)+'</b>':'')+' and post the payment screenshot in our WhatsApp group.</p>':'')+(m.subs_only?'<div class="wn">Keep your YouTube subscriptions <b>public</b> until your slot is confirmed.</div>':'')+'<p class="mu">Your slot is confirmed by an organizer. Check your status anytime with "Find my registration" below.</p>';roomBox(m)}
-    catch(x){fe.textContent='Could not register. Check your details and try again.'}};
+      f.parentNode.innerHTML='<h2>Registered</h2><p class="ok"><b>Your slot is held for 15 minutes.</b></p>'+(m.fee?'<p>Pay '+inr(m.fee)+(S.upi?' to UPI ID <b>'+esc(S.upi)+'</b>':'')+' and post the payment screenshot in our WhatsApp group.</p>':'')+(m.subs_only?'<div class="wn">Keep your YouTube subscriptions <b>public</b> until your slot is confirmed.</div>':'')+'<p class="mu">An organizer will confirm your slot and you will get your slot number. Check your status anytime with "Find my registration" below.</p>';roomBox(m)}
+    catch(x){const t=String(x.message);fe.textContent=t.indexOf('DUP_PHONE')>-1?'This WhatsApp number is already registered for this match.':t.indexOf('DUP_ID')>-1?'One of these BGMI character IDs is already registered for this match.':t.indexOf('DUP_SELF')>-1?'Each player must have a different BGMI character ID.':'Could not register. Check your details and try again.'}};
   $('#rq').onsubmit=e=>{e.preventDefault();localStorage.ph=e.target.q.value.trim();localStorage.cid=e.target.ci.value.trim();roomBox(m,true)};
   $('#ff').onsubmit=async e=>{e.preventDefault();const q=e.target.q.value.trim(),ci=e.target.ci.value.trim();localStorage.ph=q;localStorage.cid=ci;
-    try{const r=await rpc('find_reg',{p:q,cid:ci});$('#fr').innerHTML=r.length?r.map(x=>'<div class="c" style="margin-top:12px"><b>'+esc(x.title)+'</b><br>Team '+esc(x.team)+': <b class="'+(x.status=='confirmed'?'ok':'')+'">'+esc(x.status)+'</b>'+(x.subbed=='no'?'<br><span class="er">We could not find your subscription. Subscribe and keep subscriptions public, then message the group.</span>':'')+(x.room_id?'<br>Room ID <b>'+esc(x.room_id)+'</b> · Password <b>'+esc(x.room_pass)+'</b>':'')+'</div>').join(''):'<p class="mu">No registration found for this number.</p>';roomBox(m)}
+    try{const r=await rpc('find_reg',{p:q,cid:ci});$('#fr').innerHTML=r.length?r.map(x=>'<div class="c" style="margin-top:12px"><b>'+esc(x.title)+'</b><br>Team '+esc(x.team)+': <b class="'+(x.status=='confirmed'?'ok':'')+'">'+esc(x.status)+'</b>'+(x.slot?' · Slot <b>'+pad(x.slot)+'</b>':'')+(x.subbed=='no'?'<br><span class="er">We could not find your subscription. Subscribe and keep subscriptions public, then message the group.</span>':'')+(x.room_id?'<br>Room ID <b>'+esc(x.room_id)+'</b> · Password <b>'+esc(x.room_pass)+'</b>':'')+'</div>').join(''):'<p class="mu">No registration found for this number.</p>';roomBox(m)}
     catch(x){$('#fr').textContent='Could not search. Try again.'}};
 }
 async function roomBox(m,loud){const p=localStorage.ph,c=localStorage.cid,b=$('#rm');if(!p||!c||!b)return;
   try{const r=(await rpc('find_reg',{p,cid:c})).find(x=>x.match_id==m.id);
     if(!r){if(loud)b.innerHTML='<span class="er">No registration found for this number and character ID.</span>';return}
-    b.innerHTML=r.room_id?'Room ID <b>'+esc(r.room_id)+'</b> · Password <b>'+esc(r.room_pass)+'</b>':r.status=='confirmed'?'You are confirmed. Room details will appear here as soon as the organizer shares them.':'Your registration is '+esc(r.status)+'. Room details appear after you are confirmed.'}catch(e){if(loud)b.textContent='Could not check. Try again.'}}
+    b.innerHTML=(r.status=='confirmed'&&r.slot?'Your slot: <b>'+pad(r.slot)+'</b><br>':'')+(r.room_id?'Room ID <b>'+esc(r.room_id)+'</b> · Password <b>'+esc(r.room_pass)+'</b>':r.status=='confirmed'?'You are confirmed. Room details will appear here as soon as the organizer shares them.':'Your registration is '+esc(r.status)+'. Room details appear after you are confirmed.')}catch(e){if(loud)b.textContent='Could not check. Try again.'}}
 
 async function pRules(){V.innerHTML='<h1>Rules</h1><p class="s">Read these before you register.</p><div id="l"></div>';
   const RU=await sel('rules','&order=pos,id');$('#l').innerHTML=RU.map(r=>'<div class="c">'+esc(r.txt)+'</div>').join('')||'<div class="c mu">No rules added yet.</div>'}
@@ -169,7 +175,7 @@ async function dash(){
     vs='<div class="t">'+tl('Visits today',VS.today)+tl('Visitors today',VS.uniq_today)+tl('Total visits',VS.total)+tl('Total visitors',VS.uniq)+'</div><div class="c"><b>Last 7 days</b>'+(VS.days.map(x=>'<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span class="mu" style="width:60px">'+day(x.d+'T00:00:00+05:30')+'</span><div class="bar" style="flex:1;margin:0"><i style="width:'+x.n/mx*100+'%"></i></div><b>'+x.n+'</b><span class="mu">('+x.u+' people)</span></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div><div class="c"><b>Most opened pages</b>'+(VS.pages.map(q=>'<div style="display:flex;justify-content:space-between;margin:4px 0"><span>'+esc(q.page.indexOf('match-')==0&&mt[q.page.slice(6)]?mt[q.page.slice(6)].title:q.page)+'</span><b>'+q.n+'</b></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div>'}
   const op=a=>a.map(x=>'<option>'+x+'</option>').join('');
   V.innerHTML='<h1>Admin</h1><p><button class="o bt" data-a="out">Log out</button></p><h2>Visitors</h2>'+vs+
-  '<h2>Registrations</h2>'+(G.length?G.map(g=>'<div class="c"><b>'+esc(g.team)+'</b><span class="bd '+(g.status=='confirmed'?'':'x')+'">'+g.status+'</span><div class="mu">'+esc((mt[g.match_id]||{}).title)+' · '+esc(g.phone)+(g.yt?' · YouTube: '+esc(g.yt):'')+(g.subbed?' · Subscribed: '+g.subbed:'')+'</div><div>'+g.players.map(p=>esc(p.n)+' ('+esc(p.id)+')').join(', ')+'</div><div class="ac"><button data-a="ok" data-i="'+g.id+'">Confirm</button>'+(g.yt?'<button class="o" data-a="sy" data-i="'+g.id+'">Subscribed ✔</button><button class="o" data-a="sn" data-i="'+g.id+'">Not subscribed ✘</button>':'')+'<button class="o" data-a="rm" data-i="'+g.id+'">Remove</button></div></div>').join(''):'<div class="c mu">No registrations yet.</div>')+
+  '<h2>Registrations</h2>'+(G.length?G.map(g=>'<div class="c"><b>'+esc(g.team)+'</b><span class="bd '+(g.status=='confirmed'?'':'x')+'">'+g.status+'</span>'+(g.slot?'<span class="bd">SLOT '+pad(g.slot)+'</span>':'')+'<div class="mu">'+esc((mt[g.match_id]||{}).title)+' · '+esc(g.phone)+(g.yt?' · YouTube: '+esc(g.yt):'')+(g.subbed?' · Subscribed: '+g.subbed:'')+'</div><div>'+g.players.map(p=>esc(p.n)+' ('+esc(p.id)+')').join(', ')+'</div><div class="ac"><button data-a="ok" data-i="'+g.id+'">Confirm</button>'+(g.yt?'<button class="o" data-a="sy" data-i="'+g.id+'">Subscribed ✔</button><button class="o" data-a="sn" data-i="'+g.id+'">Not subscribed ✘</button>':'')+'<button class="o" data-a="rm" data-i="'+g.id+'">Remove</button></div></div>').join(''):'<div class="c mu">No registrations yet.</div>')+
   '<h2>Schedule a match</h2><form id="mf" class="c"><label>Match title</label><input name="ti" required><div class="g"><div><label>Date and time (IST)</label><input name="dt" type="datetime-local" required></div><div><label>Mode</label><select name="mo">'+op(['Squad','Duo','Solo'])+'</select></div><div><label>Map</label><select name="mp">'+op(['Erangel','Miramar','Sanhok','Vikendi','Livik','Nusa','TDM'])+'</select></div><div><label>Entry fee (0 = free)</label><input name="fe" type="number" min="0" value="0"></div><div><label>1st prize</label><input name="p1" type="number" min="0" value="0"></div><div><label>2nd prize</label><input name="p2" type="number" min="0" value="0"></div><div><label>3rd prize</label><input name="p3" type="number" min="0" value="0"></div><div><label>MVP prize</label><input name="mv" type="number" min="0" value="0"></div><div><label>Total slots</label><input name="sl" type="number" min="1" value="25"></div><div><label>Room ID (optional)</label><input name="ri"></div><div><label>Room password (optional)</label><input name="rp"></div></div><label><input type="checkbox" name="so">Subscribers only (free for subscribers)</label><p></p><button>Schedule match</button></form>'+
   '<h2>Matches</h2>'+M.map(m=>'<div class="c"><b>'+esc(m.title)+'</b><div class="mu">'+day(m.starts_at)+' '+tm(m.starts_at)+' · '+m.mode+' · '+(m.fee?inr(m.fee):'Free')+(m.subs_only?' · Subscribers only':'')+'</div><div class="ac"><button class="o" data-a="room" data-i="'+m.id+'">Set room</button><button class="o" data-a="dm" data-i="'+m.id+'">Delete</button></div></div>').join('')+
   '<h2>Rules</h2>'+RU.map(r=>'<div class="c">'+esc(r.txt)+'<div class="ac"><button class="o" data-a="re" data-i="'+r.id+'" data-t="'+esc(r.txt)+'">Edit</button><button class="o" data-a="rd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
@@ -185,7 +191,7 @@ async function dash(){
   $('#sf').onsubmit=go(f=>ups('settings','k',[{k:'wa',v:f.wa.value.trim()},{k:'yt',v:f.yt.value.trim()},{k:'upi',v:f.upi.value.trim()}]));
   V.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,i=b.dataset.i;
     try{if(a=='out'){sessionStorage.removeItem('tok');tok=null;return pAdmin()}
-      if(a=='ok')await upd('regs',i,{status:'confirmed'});
+      if(a=='ok')await rpc('confirm_reg',{rid:+i});
       else if(a=='sy')await upd('regs',i,{subbed:'yes'});
       else if(a=='sn')await upd('regs',i,{subbed:'no'});
       else if(a=='rm'){if(!confirm('Remove this registration?'))return;await del('regs',i)}
@@ -194,7 +200,7 @@ async function dash(){
       else if(a=='xd')await del('results',i);
       else if(a=='re'){const t=prompt('Edit rule',b.dataset.t);if(!t)return;await upd('rules',i,{txt:t})}
       else if(a=='room'){const id=prompt('Room ID');if(!id)return;const pw=prompt('Room password')||'';await ups('rooms','match_id',[{match_id:+i,room_id:id,room_pass:pw}])}
-      dash()}catch(x){alert('Failed: '+x.message)}};
+      dash()}catch(x){const t=String(x.message);alert(t.indexOf('MATCH_FULL')>-1?'All slots of this match are full.':t.indexOf('DUP_CONFIRMED')>-1?'Another confirmed team already uses this phone number or BGMI ID.':'Failed: '+t)}};
 }
 
 function track(h){if(h=='admin'||tok)return;try{let v=localStorage.vid;if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.vid=v}
@@ -202,14 +208,14 @@ function track(h){if(h=='admin'||tok)return;try{let v=localStorage.vid;if(!v){v=
 
 /* ===== Router ===== */
 async function route(){
-  clearInterval(T);V.onclick=null;
+  clearInterval(T);V.onclick=null;SM='';
   const h=location.hash.slice(1)||'matches';
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')=='#'+h||(h.indexOf('match-')==0&&a.getAttribute('href')=='#matches')));
   if(C.url.indexOf('YOUR_')>-1){V.innerHTML='<div class="c"><b>Setup needed.</b> Open index.html and paste your Supabase URL and key in the settings at the top of the script.</div>';return}
   track(h);
   try{if(h=='results')await pResults();else if(h=='rules')await pRules();else if(h=='admin')await pAdmin();else if(h.indexOf('match-')==0)await pMatch(+h.slice(6));else await pMatches()}
   catch(e){V.innerHTML='<div class="c er">Could not load data. Check your connection and refresh the page.</div>'}
-  scrollTo(0,0)}
+  sup();scrollTo(0,0)}
 addEventListener('hashchange',route);
 loadS().then(route);
 </script></body></html>
