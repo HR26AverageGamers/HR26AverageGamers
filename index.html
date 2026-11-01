@@ -110,9 +110,9 @@ async function loadS(){try{(await sel('settings')).forEach(r=>S[r.k]=r.v)}catch(
 async function pMatches(){
   V.innerHTML='<img src="banner.jpg" alt="HR26AverageGamers tournaments" class="bn" onerror="this.remove()"><h1>Upcoming matches</h1><p class="s">Free and paid BGMI custom rooms. All times are IST.</p><div id="l">Loading...</div>';
   const [M,R]=await Promise.all([sel('matches','&starts_at=gte.'+new Date(Date.now()-36e5).toISOString()+'&order=starts_at'),sel('public_regs')]);
-  $('#l').innerHTML=M.length?M.map(m=>{const n=cnt(R,m.id);
+  $('#l').innerHTML=notes(M)+(M.length?M.map(m=>{const n=cnt(R,m.id);
     return '<a class="c m" href="#match-'+m.id+'"><div><span class="mu">'+day(m.starts_at)+'</span><br><b>'+tm(m.starts_at)+'</b></div><div><b>'+esc(m.title)+'</b>'+bdg(stat(m,n))+(m.subs_only?'<span class="bd">SUBSCRIBERS ONLY</span>':'')+
-    '<div class="mu">'+m.mode+' · '+m.map+' · '+(m.fee?inr(m.fee)+' entry':'Free entry')+' · Prizes '+inr(m.p1+m.p2+m.p3+m.mvp)+'</div><div class="bar"><i style="width:'+Math.min(100,n/m.slots*100)+'%"></i></div><span class="mu">'+n+'/'+m.slots+' teams</span></div></a>'}).join(''):'<div class="c mu">No matches scheduled yet. Check back soon.</div>';
+    '<div class="mu">'+m.mode+' · '+m.map+' · '+(m.fee?inr(m.fee)+' entry':'Free entry')+' · Prizes '+inr(m.p1+m.p2+m.p3+m.mvp)+'</div><div class="bar"><i style="width:'+Math.min(100,n/m.slots*100)+'%"></i></div><span class="mu">'+n+'/'+m.slots+' teams</span></div></a>'}).join(''):'<div class="c mu">No matches scheduled yet. Check back soon.</div>');
 }
 
 async function pMatch(id){
@@ -128,7 +128,7 @@ async function pMatch(id){
     form+='<p class="er" id="fe"></p><button>Register &amp; hold slot</button></form></div>';
   }
   V.innerHTML='<p><a href="#matches">← All matches</a></p><h1>'+esc(m.title)+bdg(s)+'</h1><p class="s">'+day(m.starts_at)+', '+tm(m.starts_at)+' IST · <span id="cd"></span><br>Registration closes at '+tm(new Date(m.starts_at)-18e5)+' IST.</p>'+
-  '<div class="t">'+tile('Mode',m.mode)+tile('Map',m.map)+tile('Entry',m.fee?inr(m.fee):'Free')+tile('1st prize',inr(m.p1))+tile('2nd prize',inr(m.p2))+tile('3rd prize',inr(m.p3))+tile('MVP prize',inr(m.mvp))+tile('Slots',n+'/'+m.slots)+'</div>'+
+  notes([m])+'<div class="t">'+tile('Mode',m.mode)+tile('Map',m.map)+tile('Entry',m.fee?inr(m.fee):'Free')+tile('1st prize',inr(m.p1))+tile('2nd prize',inr(m.p2))+tile('3rd prize',inr(m.p3))+tile('MVP prize',inr(m.mvp))+tile('Slots',n+'/'+m.slots)+'</div>'+
   '<div class="c"><h2 style="margin-top:0">Room details</h2><div id="rm" class="mu">Only shown to confirmed teams. Enter your WhatsApp number and BGMI character ID to see the room ID and password.</div><form id="rq" class="g"><div><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10" value="'+esc(localStorage.ph||'')+'"></div><div><label>BGMI character ID</label><input name="ci" required inputmode="numeric" maxlength="14" value="'+esc(localStorage.cid||'')+'"></div><div><p></p><button>Show room details</button></div></form></div>'+form+
   '<details class="c"><summary><b>Already registered? Find my registration</b></summary><form id="ff"><label>WhatsApp number</label><input name="q" required inputmode="numeric" maxlength="10"><label>BGMI character ID (any player in your team)</label><input name="ci" required inputmode="numeric" maxlength="14"><p></p><button>Find my registration</button></form><div id="fr"></div></details>'+
   '<p><a class="bt o" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m.title+' - register here: '+location.href)+'">Share on WhatsApp</a></p>'+
@@ -141,7 +141,7 @@ async function pMatch(id){
     const pl=[];for(let i=0;i<pc;i++)pl.push({n:f['pn'+i].value.trim(),id:f['pi'+i].value.trim()});
     try{await ins('regs',{match_id:m.id,team:f.tn.value.trim(),phone:ph,players:pl,yt:m.subs_only?f.yt.value.trim():null});localStorage.ph=ph;localStorage.cid=pl[0].id;
       f.parentNode.innerHTML='<h2>Registered</h2><p class="ok"><b>Your slot is held for 15 minutes.</b></p>'+(m.fee?'<p>Pay '+inr(m.fee)+(S.upi?' to UPI ID <b>'+esc(S.upi)+'</b>':'')+' and post the payment screenshot in our WhatsApp group.</p>':'')+(m.subs_only?'<div class="wn">Keep your YouTube subscriptions <b>public</b> until your slot is confirmed.</div>':'')+'<p class="mu">An organizer will confirm your slot and you will get your slot number. Check your status anytime with "Find my registration" below.</p>';roomBox(m)}
-    catch(x){const t=String(x.message);fe.textContent=t.indexOf('DUP_PHONE')>-1?'This WhatsApp number is already registered for this match.':t.indexOf('DUP_ID')>-1?'One of these BGMI character IDs is already registered for this match.':t.indexOf('DUP_SELF')>-1?'Each player must have a different BGMI character ID.':'Could not register. Check your details and try again.'}};
+    catch(x){const t=String(x.message);fe.textContent=t.indexOf('DUP_PHONE')>-1?'This WhatsApp number is already registered for this match. Use "Find my registration" below.':t.indexOf('DUP_ID')>-1?'One of these BGMI character IDs is already registered for this match.':t.indexOf('DUP_SELF')>-1?'Each player must have a different BGMI character ID.':'Could not register. Check your details and try again.'}};
   $('#rq').onsubmit=e=>{e.preventDefault();localStorage.ph=e.target.q.value.trim();localStorage.cid=e.target.ci.value.trim();roomBox(m,true)};
   $('#ff').onsubmit=async e=>{e.preventDefault();const q=e.target.q.value.trim(),ci=e.target.ci.value.trim();localStorage.ph=q;localStorage.cid=ci;
     try{const r=await rpc('find_reg',{p:q,cid:ci});$('#fr').innerHTML=r.length?r.map(x=>'<div class="c" style="margin-top:12px"><b>'+esc(x.title)+'</b><br>Team '+esc(x.team)+': <b class="'+(x.status=='confirmed'?'ok':'')+'">'+esc(x.status)+'</b>'+(x.slot?' · Slot <b>'+pad(x.slot)+'</b>':'')+(x.subbed=='no'?'<br><span class="er">We could not find your subscription. Subscribe and keep subscriptions public, then message the group.</span>':'')+(x.room_id?'<br>Room ID <b>'+esc(x.room_id)+'</b> · Password <b>'+esc(x.room_pass)+'</b>':'')+'</div>').join(''):'<p class="mu">No registration found for this number.</p>';roomBox(m)}
@@ -157,7 +157,7 @@ async function pRules(){V.innerHTML='<h1>Rules</h1><p class="s">Read these befor
 async function pResults(){V.innerHTML='<h1>Results</h1><p class="s">Winners of recent matches.</p><div id="l"></div>';
   const R=await sel('results','&order=played.desc');$('#l').innerHTML=R.map(r=>'<div class="c"><b>'+esc(r.title)+'</b><div class="mu">'+esc(r.played||'')+'</div><div style="white-space:pre-line;margin-top:6px">'+esc(r.winners)+'</div></div>').join('')||'<div class="c mu">No results yet.</div>'}
 
-/* ===== Admin ===== */
+/* ===== Admin login ===== */
 function pAdmin(){
   if(tok)return dash();
   V.innerHTML='<h1>Admin login</h1><form id="lf" class="c" style="max-width:420px"><label>Username or email</label><input name="u" required autocomplete="username"><label>Password</label><input name="p" type="password" required autocomplete="current-password"><p class="er" id="le"></p><button>Log in</button></form>';
@@ -166,32 +166,99 @@ function pAdmin(){
     const j=await r.json();if(!j.access_token){$('#le').textContent='Login failed: '+(j.error_description||j.msg||j.message||'check your details')+'.';return}
     tok=j.access_token;sessionStorage.tok=tok;pAdmin()}}
 
+/* ===== Admin ===== */
+let AT='home',D={},F={m:'',s:'',q:''},NM=0;
+const TABS=[['home','Overview'],['regs','Registrations'],['matches','Matches'],['content','Rules & Results'],['set','Settings']];
+const xl=()=>window.XLSX?Promise.resolve():new Promise((r,j)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=r;s.onerror=j;document.head.appendChild(s)});
+const pcOf=m=>m.mode=='Solo'?1:m.mode=='Duo'?2:4;
+const flt=()=>D.G.filter(g=>(!F.m||g.match_id==F.m)&&(!F.s||g.status==F.s)&&(!F.q||(g.team+g.phone+g.players.map(p=>p.n+p.id).join()).toLowerCase().indexOf(F.q.toLowerCase())>-1));
+
 async function dash(){
   const [M,G,RU,RS,VS]=await Promise.all([sel('matches','&order=starts_at.desc'),sel('regs','&order=created_at.desc'),sel('rules','&order=pos,id'),sel('results','&order=played.desc'),rpc('visit_stats',{}).catch(()=>null)]);
-  const mt={};M.forEach(m=>mt[m.id]=m);
-  const tl=(a,b)=>'<div><span>'+a+'</span><b>'+b+'</b></div>';
-  let vs='<div class="c mu">Visitor stats need the visit counter SQL to be run in Supabase.</div>';
-  if(VS){const mx=Math.max(1,...VS.days.map(x=>x.n));
-    vs='<div class="t">'+tl('Visits today',VS.today)+tl('Visitors today',VS.uniq_today)+tl('Total visits',VS.total)+tl('Total visitors',VS.uniq)+'</div><div class="c"><b>Last 7 days</b>'+(VS.days.map(x=>'<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span class="mu" style="width:60px">'+day(x.d+'T00:00:00+05:30')+'</span><div class="bar" style="flex:1;margin:0"><i style="width:'+x.n/mx*100+'%"></i></div><b>'+x.n+'</b><span class="mu">('+x.u+' people)</span></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div><div class="c"><b>Most opened pages</b>'+(VS.pages.map(q=>'<div style="display:flex;justify-content:space-between;margin:4px 0"><span>'+esc(q.page.indexOf('match-')==0&&mt[q.page.slice(6)]?mt[q.page.slice(6)].title:q.page)+'</span><b>'+q.n+'</b></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div>'}
-  const op=a=>a.map(x=>'<option>'+x+'</option>').join('');
-  V.innerHTML='<h1>Admin</h1><p><button class="o bt" data-a="out">Log out</button></p><h2>Visitors</h2>'+vs+
-  '<h2>Registrations</h2>'+(G.length?G.map(g=>'<div class="c"><b>'+esc(g.team)+'</b><span class="bd '+(g.status=='confirmed'?'':'x')+'">'+g.status+'</span>'+(g.slot?'<span class="bd">SLOT '+pad(g.slot)+'</span>':'')+'<div class="mu">'+esc((mt[g.match_id]||{}).title)+' · '+esc(g.phone)+(g.yt?' · YouTube: '+esc(g.yt):'')+(g.subbed?' · Subscribed: '+g.subbed:'')+'</div><div>'+g.players.map(p=>esc(p.n)+' ('+esc(p.id)+')').join(', ')+'</div><div class="ac"><button data-a="ok" data-i="'+g.id+'">Confirm</button>'+(g.yt?'<button class="o" data-a="sy" data-i="'+g.id+'">Subscribed ✔</button><button class="o" data-a="sn" data-i="'+g.id+'">Not subscribed ✘</button>':'')+'<button class="o" data-a="rm" data-i="'+g.id+'">Remove</button></div></div>').join(''):'<div class="c mu">No registrations yet.</div>')+
-  '<h2>Schedule a match</h2><form id="mf" class="c"><label>Match title</label><input name="ti" required><div class="g"><div><label>Date and time (IST)</label><input name="dt" type="datetime-local" required></div><div><label>Mode</label><select name="mo">'+op(['Squad','Duo','Solo'])+'</select></div><div><label>Map</label><select name="mp">'+op(['Erangel','Miramar','Sanhok','Vikendi','Livik','Nusa','TDM'])+'</select></div><div><label>Entry fee (0 = free)</label><input name="fe" type="number" min="0" value="0"></div><div><label>1st prize</label><input name="p1" type="number" min="0" value="0"></div><div><label>2nd prize</label><input name="p2" type="number" min="0" value="0"></div><div><label>3rd prize</label><input name="p3" type="number" min="0" value="0"></div><div><label>MVP prize</label><input name="mv" type="number" min="0" value="0"></div><div><label>Total slots</label><input name="sl" type="number" min="1" value="25"></div><div><label>Room ID (optional)</label><input name="ri"></div><div><label>Room password (optional)</label><input name="rp"></div></div><label><input type="checkbox" name="so">Subscribers only (free for subscribers)</label><p></p><button>Schedule match</button></form>'+
-  '<h2>Matches</h2>'+M.map(m=>'<div class="c"><b>'+esc(m.title)+'</b><div class="mu">'+day(m.starts_at)+' '+tm(m.starts_at)+' · '+m.mode+' · '+(m.fee?inr(m.fee):'Free')+(m.subs_only?' · Subscribers only':'')+'</div><div class="ac"><button class="o" data-a="room" data-i="'+m.id+'">Set room</button><button class="o" data-a="dm" data-i="'+m.id+'">Delete</button></div></div>').join('')+
-  '<h2>Rules</h2>'+RU.map(r=>'<div class="c">'+esc(r.txt)+'<div class="ac"><button class="o" data-a="re" data-i="'+r.id+'" data-t="'+esc(r.txt)+'">Edit</button><button class="o" data-a="rd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
-  '<form id="rf" class="c"><label>New rule</label><input name="t" required><p></p><button>Add rule</button></form>'+
-  '<h2>Results</h2>'+RS.map(r=>'<div class="c"><b>'+esc(r.title)+'</b> <span class="mu">'+esc(r.played||'')+'</span><div style="white-space:pre-line">'+esc(r.winners)+'</div><div class="ac"><button class="o" data-a="xd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
-  '<form id="xf" class="c"><label>Match title</label><input name="t" required><label>Date</label><input name="d" type="date"><label>Winners (1st, 2nd, 3rd, MVP)</label><textarea name="w" rows="4" required></textarea><p></p><button>Add result</button></form>'+
-  '<h2>Settings</h2><form id="sf" class="c"><label>WhatsApp group link</label><input name="wa" value="'+esc(S.wa||'')+'"><label>YouTube channel link</label><input name="yt" value="'+esc(S.yt||'')+'"><label>UPI ID</label><input name="upi" value="'+esc(S.upi||'')+'"><p></p><button>Save settings</button></form>';
+  const mt={};M.forEach(m=>mt[m.id]=m);D={M,G,RU,RS,VS,mt};render()}
+
+function render(){
+  const {M,G,RU,RS,VS,mt}=D;
+  const tl=(a,b)=>'<div><span>'+a+'</span><b>'+b+'</b></div>',op=a=>a.map(x=>'<option>'+x+'</option>').join('');
+  const conf=id=>G.filter(g=>g.match_id==id&&g.status=='confirmed').length;
+  const al=M.filter(m=>m.resched_at&&!m.resched_notified);
+  let h='<h1>Admin</h1><div class="ac" style="margin:0 0 14px">'+TABS.map(t=>'<button class="'+(AT==t[0]?'':'o')+'" data-a="tab" data-i="'+t[0]+'">'+t[1]+'</button>').join('')+'<button class="o" data-a="out">Log out</button></div>';
+  if(AT!='notify')h+=al.map(m=>'<div class="wn"><b>'+esc(m.title)+'</b> was rescheduled ('+day(m.starts_at)+', '+tm(m.starts_at)+'). '+conf(m.id)+' confirmed teams still need a WhatsApp notification. <button data-a="wn" data-i="'+m.id+'">Notify teams</button></div>').join('');
+
+  if(AT=='home'){
+    const up=M.filter(m=>new Date(m.starts_at)>Date.now()).reverse();
+    h+='<div class="t">'+tl('Upcoming matches',up.length)+tl('Pending teams',G.filter(g=>g.status!='confirmed').length)+tl('Confirmed teams',G.filter(g=>g.status=='confirmed').length)+(VS?tl('Visits today',VS.today)+tl('Visitors today',VS.uniq_today):'')+'</div>';
+    h+='<h2>Upcoming matches</h2>'+(up.map(m=>{const c=conf(m.id),p=Math.round(c/m.slots*100);return '<div class="c"><b>'+esc(m.title)+'</b> <span class="mu">'+day(m.starts_at)+', '+tm(m.starts_at)+'</span><div class="bar"><i style="width:'+Math.min(100,p)+'%"></i></div><span class="mu">'+c+'/'+m.slots+' confirmed ('+p+'%)</span>'+(m.subs_only&&p<50?' <span class="er">· Below 50%, may be rescheduled</span>':'')+'</div>'}).join('')||'<div class="c mu">No upcoming matches.</div>');
+    if(VS){const mx=Math.max(1,...VS.days.map(x=>x.n));
+      h+='<h2>Visitors</h2><div class="t">'+tl('Total visits',VS.total)+tl('Total visitors',VS.uniq)+'</div><div class="c"><b>Last 7 days</b>'+(VS.days.map(x=>'<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span class="mu" style="width:60px">'+day(x.d+'T00:00:00+05:30')+'</span><div class="bar" style="flex:1;margin:0"><i style="width:'+x.n/mx*100+'%"></i></div><b>'+x.n+'</b><span class="mu">('+x.u+' people)</span></div>').join('')||'<div class="mu">No visits yet.</div>')+'</div>'}
+  }
+
+  else if(AT=='regs'){
+    const L=flt();
+    h+='<div class="c"><div class="g"><div><label>Match</label><select id="fm"><option value="">All matches</option>'+M.map(m=>'<option value="'+m.id+'"'+(F.m==m.id?' selected':'')+'>'+esc(m.title)+' ('+day(m.starts_at)+')</option>').join('')+'</select></div><div><label>Status</label><select id="fs">'+[['','All'],['pending','Pending'],['confirmed','Confirmed']].map(x=>'<option value="'+x[0]+'"'+(F.s==x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div></div><label>Search team, phone or BGMI ID</label><input id="fq" value="'+esc(F.q)+'" placeholder="Type and press Enter"><p class="mu">Showing '+L.length+' · Confirmed '+L.filter(g=>g.status=='confirmed').length+'</p><div class="ac"><button data-a="exp">Download Excel</button></div></div>';
+    h+='<details class="c"><summary><b>Import registrations from Excel</b></summary><p class="mu">Columns: Team, Phone, Status (pending/confirmed), YouTube, Player 1 Name, Player 1 ID ... Player 4 ID. Rows with a duplicate phone number or BGMI ID are skipped and listed after the import.</p><label>Import into match</label><select id="im">'+M.map(m=>'<option value="'+m.id+'">'+esc(m.title)+' ('+m.mode+')</option>').join('')+'</select><label>Excel / CSV file</label><input id="if" type="file" accept=".xlsx,.xls,.csv"><div class="ac"><button data-a="imp">Import</button><button class="o" data-a="tpl">Download template</button></div></details>';
+    h+=L.map(g=>'<div class="c"><b>'+esc(g.team)+'</b><span class="bd '+(g.status=='confirmed'?'':'x')+'">'+g.status+'</span>'+(g.slot?'<span class="bd">SLOT '+pad(g.slot)+'</span>':'')+'<div class="mu">'+esc((mt[g.match_id]||{}).title)+' · '+esc(g.phone)+(g.yt?' · YouTube: '+esc(g.yt):'')+(g.subbed?' · Subscribed: '+g.subbed:'')+'</div><div>'+g.players.map(p=>esc(p.n)+' ('+esc(p.id)+')').join(', ')+'</div><div class="ac">'+(g.status!='confirmed'?'<button data-a="ok" data-i="'+g.id+'">Confirm</button>':'')+(g.yt?'<button class="o" data-a="sy" data-i="'+g.id+'">Subscribed ✔</button><button class="o" data-a="sn" data-i="'+g.id+'">Not subscribed ✘</button>':'')+'<button class="o" data-a="rm" data-i="'+g.id+'">Remove</button></div></div>').join('')||'<div class="c mu">No registrations found.</div>';
+  }
+
+  else if(AT=='matches'){
+    h+='<details class="c"><summary><b>Schedule a new match</b></summary><form id="mf"><label>Match title</label><input name="ti" required><div class="g"><div><label>Date and time (IST)</label><input name="dt" type="datetime-local" required></div><div><label>Mode</label><select name="mo">'+op(['Squad','Duo','Solo'])+'</select></div><div><label>Map</label><select name="mp">'+op(['Erangel','Miramar','Sanhok','Vikendi','Livik','Nusa','TDM'])+'</select></div><div><label>Entry fee (0 = free)</label><input name="fe" type="number" min="0" value="0"></div><div><label>1st prize</label><input name="p1" type="number" min="0" value="0"></div><div><label>2nd prize</label><input name="p2" type="number" min="0" value="0"></div><div><label>3rd prize</label><input name="p3" type="number" min="0" value="0"></div><div><label>MVP prize</label><input name="mv" type="number" min="0" value="0"></div><div><label>Total slots</label><input name="sl" type="number" min="1" value="25"></div><div><label>Room ID (optional)</label><input name="ri"></div><div><label>Room password (optional)</label><input name="rp"></div></div><label><input type="checkbox" name="so">Subscribers only (auto-reschedules if under 50% confirmed)</label><p></p><button>Schedule match</button></form></details>';
+    h+=M.map(m=>'<div class="c"><b>'+esc(m.title)+'</b>'+(m.resched_at?'<span class="bd x">RESCHEDULED</span>':'')+'<div class="mu">'+day(m.starts_at)+' '+tm(m.starts_at)+' · '+m.mode+' · '+(m.fee?inr(m.fee):'Free')+(m.subs_only?' · Subscribers only':'')+' · '+conf(m.id)+'/'+m.slots+' confirmed</div><div class="ac"><button class="o" data-a="room" data-i="'+m.id+'">Set room</button><button class="o" data-a="rs" data-i="'+m.id+'">Reschedule</button>'+(m.resched_at?'<button class="o" data-a="wn" data-i="'+m.id+'">Notify teams</button>':'')+'<button class="o" data-a="dm" data-i="'+m.id+'">Delete</button></div></div>').join('');
+  }
+
+  else if(AT=='notify'){
+    const m=mt[NM];if(!m){AT='matches';return render()}
+    const L=G.filter(g=>g.match_id==NM&&g.status=='confirmed').sort((a,b)=>(a.slot||99)-(b.slot||99));
+    const msg='Hi {team}, '+m.title+' has been rescheduled. New time: '+day(m.starts_at)+', '+tm(m.starts_at)+' IST. Your slot {slot} is still confirmed and your registration is safe. Room details will appear on our website. - HR26AverageGamers';
+    h+='<h2>WhatsApp notify: '+esc(m.title)+'</h2><p class="mu">Confirmed teams only ('+L.length+'). Press Send next to each team. WhatsApp opens with the message ready, you only need to tap send.</p><div class="c"><label>Message ({team} and {slot} are filled in automatically)</label><textarea id="nt" rows="4">'+esc(msg)+'</textarea></div>'+
+    L.map(g=>'<div class="c" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span><b>'+esc(g.team)+'</b> <span class="mu">Slot '+pad(g.slot)+' · '+esc(g.phone)+'</span></span><button class="'+(localStorage['sent'+NM+g.phone]?'o':'')+'" data-a="send" data-p="'+esc(g.phone)+'" data-t="'+esc(g.team)+'" data-s="'+(g.slot||0)+'">'+(localStorage['sent'+NM+g.phone]?'Sent ✔':'Send')+'</button></div>').join('')+
+    '<div class="ac"><button data-a="done" data-i="'+NM+'">Mark all as notified</button><button class="o" data-a="tab" data-i="matches">Back</button></div>';
+  }
+
+  else if(AT=='content'){
+    h+='<h2>Rules</h2>'+RU.map(r=>'<div class="c">'+esc(r.txt)+'<div class="ac"><button class="o" data-a="re" data-i="'+r.id+'" data-t="'+esc(r.txt)+'">Edit</button><button class="o" data-a="rd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
+    '<form id="rf" class="c"><label>New rule</label><input name="t" required><p></p><button>Add rule</button></form>'+
+    '<h2>Results</h2>'+RS.map(r=>'<div class="c"><b>'+esc(r.title)+'</b> <span class="mu">'+esc(r.played||'')+'</span><div style="white-space:pre-line">'+esc(r.winners)+'</div><div class="ac"><button class="o" data-a="xd" data-i="'+r.id+'">Delete</button></div></div>').join('')+
+    '<form id="xf" class="c"><label>Match title</label><input name="t" required><label>Date</label><input name="d" type="date"><label>Winners (1st, 2nd, 3rd, MVP)</label><textarea name="w" rows="4" required></textarea><p></p><button>Add result</button></form>';
+  }
+
+  else h+='<form id="sf" class="c"><label>WhatsApp group link</label><input name="wa" value="'+esc(S.wa||'')+'"><label>YouTube channel link</label><input name="yt" value="'+esc(S.yt||'')+'"><label>UPI ID</label><input name="upi" value="'+esc(S.upi||'')+'"><p></p><button>Save settings</button></form>';
+
+  V.innerHTML=h;
   const go=fn=>async e=>{e.preventDefault();try{await fn(e.target);await loadS();dash()}catch(x){alert('Failed: '+x.message)}};
-  $('#mf').onsubmit=go(async f=>{const v=n=>f[n].value,r=await ins('matches',{title:v('ti'),starts_at:new Date(v('dt')+':00+05:30').toISOString(),mode:v('mo'),map:v('mp'),fee:+v('fe')||0,p1:+v('p1')||0,p2:+v('p2')||0,p3:+v('p3')||0,mvp:+v('mv')||0,slots:+v('sl')||25,subs_only:f.so.checked},1);
+  const bind=(id,fn)=>{const e=$(id);if(e)e.onsubmit=go(fn)};
+  bind('#mf',async f=>{const v=n=>f[n].value,r=await ins('matches',{title:v('ti'),starts_at:new Date(v('dt')+':00+05:30').toISOString(),mode:v('mo'),map:v('mp'),fee:+v('fe')||0,p1:+v('p1')||0,p2:+v('p2')||0,p3:+v('p3')||0,mvp:+v('mv')||0,slots:+v('sl')||25,subs_only:f.so.checked},1);
     if(v('ri'))await ups('rooms','match_id',[{match_id:r[0].id,room_id:v('ri'),room_pass:v('rp')}])});
-  $('#rf').onsubmit=go(f=>ins('rules',{txt:f.t.value.trim(),pos:RU.length+1}));
-  $('#xf').onsubmit=go(f=>ins('results',{title:f.t.value.trim(),played:f.d.value||null,winners:f.w.value.trim()}));
-  $('#sf').onsubmit=go(f=>ups('settings','k',[{k:'wa',v:f.wa.value.trim()},{k:'yt',v:f.yt.value.trim()},{k:'upi',v:f.upi.value.trim()}]));
+  bind('#rf',f=>ins('rules',{txt:f.t.value.trim(),pos:RU.length+1}));
+  bind('#xf',f=>ins('results',{title:f.t.value.trim(),played:f.d.value||null,winners:f.w.value.trim()}));
+  bind('#sf',f=>ups('settings','k',[{k:'wa',v:f.wa.value.trim()},{k:'yt',v:f.yt.value.trim()},{k:'upi',v:f.upi.value.trim()}]));
+  [['#fm','m'],['#fs','s'],['#fq','q']].forEach(x=>{const e=$(x[0]);if(e)e.onchange=()=>{F[x[1]]=e.value.trim();render()}});
+
   V.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,i=b.dataset.i;
-    try{if(a=='out'){sessionStorage.removeItem('tok');tok=null;return pAdmin()}
-      if(a=='ok')await rpc('confirm_reg',{rid:+i});
+    try{
+      if(a=='out'){sessionStorage.removeItem('tok');tok=null;return pAdmin()}
+      if(a=='tab'){AT=i;return render()}
+      if(a=='wn'){NM=+i;AT='notify';return render()}
+      if(a=='send'){const t=$('#nt').value.replace(/{team}/g,b.dataset.t).replace(/{slot}/g,pad(+b.dataset.s));window.open('https://wa.me/91'+b.dataset.p+'?text='+encodeURIComponent(t),'_blank');localStorage['sent'+NM+b.dataset.p]=1;b.textContent='Sent ✔';b.classList.add('o');return}
+      if(a=='done'){await upd('matches',i,{resched_notified:true});AT='matches'}
+      else if(a=='exp'){await xl();const rows=flt().map(g=>{const o={Match:(mt[g.match_id]||{}).title,Team:g.team,Phone:g.phone,Status:g.status,Slot:g.slot||'',YouTube:g.yt||'',Subscribed:g.subbed||''};for(let k=0;k<4;k++){o['Player '+(k+1)+' Name']=(g.players[k]||{}).n||'';o['Player '+(k+1)+' ID']=(g.players[k]||{}).id||''}return o});
+        const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Registrations');XLSX.writeFile(wb,'registrations.xlsx');return}
+      else if(a=='tpl'){await xl();const o={Team:'Team Alpha',Phone:'9876543210',Status:'pending',YouTube:''};for(let k=1;k<=4;k++){o['Player '+k+' Name']='Name '+k;o['Player '+k+' ID']='5'+k+'00000000'}
+        const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([o]),'Template');XLSX.writeFile(wb,'registration_template.xlsx');return}
+      else if(a=='imp'){const fl=$('#if').files[0],mid=$('#im').value;if(!fl||!mid)return alert('Choose a match and a file.');
+        const pc=pcOf(mt[mid]);await xl();const wb=XLSX.read(await fl.arrayBuffer()),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});let ok=0,bad=[];
+        for(let k=0;k<rows.length;k++){const r={};Object.keys(rows[k]).forEach(c=>r[c.trim().toLowerCase()]=String(rows[k][c]).trim());
+          const pl=[];for(let n=1;n<=pc;n++)if(r['player '+n+' id'])pl.push({n:r['player '+n+' name']||'',id:r['player '+n+' id']});
+          const ph=(r.phone||'').replace(/\D/g,'').slice(-10);
+          try{if(!r.team||ph.length!=10||pl.length!=pc)throw new Error('missing or invalid data');
+            const x=await ins('regs',{match_id:+mid,team:r.team,phone:ph,players:pl,yt:r.youtube||null},1);
+            if((r.status||'').toLowerCase()=='confirmed')await rpc('confirm_reg',{rid:x[0].id});ok++}
+          catch(er){const t=String(er.message);bad.push('Row '+(k+2)+': '+(t.indexOf('DUP_PHONE')>-1?'phone already registered':t.indexOf('DUP_ID')>-1?'BGMI ID already registered':t.indexOf('DUP_SELF')>-1?'same ID repeated':t.indexOf('MATCH_FULL')>-1?'match full':t.slice(0,60)))}}
+        alert('Imported: '+ok+' / '+rows.length+(bad.length?'\n\nSkipped:\n'+bad.join('\n'):''))}
+      else if(a=='rs'){const m=mt[i],d=new Date(new Date(m.starts_at).getTime()+864e5);
+        const v=prompt('New date and time (YYYY-MM-DD HH:MM, IST). Leave blank for the next day at the same time.');if(v===null)return;
+        const ns=v.trim()?new Date(v.trim().replace(' ','T')+':00+05:30'):d;if(isNaN(ns))return alert('Invalid date format.');
+        await upd('matches',i,{starts_at:ns.toISOString(),resched_from:m.starts_at,resched_at:new Date().toISOString(),resched_notified:false});NM=+i;AT='notify'}
+      else if(a=='ok')await rpc('confirm_reg',{rid:+i});
       else if(a=='sy')await upd('regs',i,{subbed:'yes'});
       else if(a=='sn')await upd('regs',i,{subbed:'no'});
       else if(a=='rm'){if(!confirm('Remove this registration?'))return;await del('regs',i)}
@@ -202,6 +269,11 @@ async function dash(){
       else if(a=='room'){const id=prompt('Room ID');if(!id)return;const pw=prompt('Room password')||'';await ups('rooms','match_id',[{match_id:+i,room_id:id,room_pass:pw}])}
       dash()}catch(x){const t=String(x.message);alert(t.indexOf('MATCH_FULL')>-1?'All slots of this match are full.':t.indexOf('DUP_CONFIRMED')>-1?'Another confirmed team already uses this phone number or BGMI ID.':'Failed: '+t)}};
 }
+
+const notes=M=>{let h='';
+  M.filter(m=>m.resched_at&&Date.now()-new Date(m.resched_at)<2592e5&&new Date(m.starts_at)>Date.now()).forEach(m=>h+='<div class="wn"><b>Important:</b> '+esc(m.title)+' has been rescheduled. New time: <b>'+day(m.starts_at)+', '+tm(m.starts_at)+' IST</b>. Registrations of confirmed teams are safe.</div>');
+  if(M.some(m=>m.subs_only&&new Date(m.starts_at)>Date.now()))h+='<div class="wn"><b>Important:</b> If fewer than 50% of the slots are confirmed when registration closes, this subscribers-only match will be rescheduled to the next day at the same time. Existing registrations are kept.</div>';
+  return h};
 
 function track(h){if(h=='admin'||tok)return;try{let v=localStorage.vid;if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.vid=v}
   fetch(C.url+'/rest/v1/visits',{method:'POST',headers:{apikey:C.key,Authorization:'Bearer '+C.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({vid:v,page:h.slice(0,40)}),keepalive:true}).catch(()=>{})}catch(e){}}
@@ -217,5 +289,5 @@ async function route(){
   catch(e){V.innerHTML='<div class="c er">Could not load data. Check your connection and refresh the page.</div>'}
   sup();scrollTo(0,0)}
 addEventListener('hashchange',route);
-loadS().then(route);
+loadS().then(()=>{rpc('auto_resched',{}).catch(()=>{});route()});
 </script></body></html>
